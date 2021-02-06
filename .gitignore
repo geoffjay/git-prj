@@ -1,0 +1,7 @@
+*~
+*.sw[op]
+
+.idea/
+
+# generated
+pkg/
