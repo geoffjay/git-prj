@@ -3,12 +3,11 @@
 require 'graphql/client'
 require 'graphql/client/http'
 
+# GraphQL client and queries.
 module Prj
   HTTP = GraphQL::Client::HTTP.new('https://api.github.com/graphql') do
     def headers(context)
-      unless context[:token] || ENV['GITHUB_API_TOKEN']
-        raise 'Missing GitHub access token'
-      end
+      raise 'Missing GitHub access token' unless context[:token] || ENV['GITHUB_API_TOKEN']
 
       token = context[:token] || ENV['GITHUB_API_TOKEN']
       auth = "Bearer #{token}"
@@ -23,10 +22,9 @@ module Prj
 
   # Fetch latest schema on init, this will make a network request
   # TODO: bail if file doesn't exist?
-  path = Pathname.new(Dir.pwd).join("schema.json").to_s
-  unless File.exist?(path)
-    fail 'The schema.json file does not exist'
-  end
+  path = Pathname.new(Dir.pwd).join('schema.json').to_s
+  raise 'The schema.json file does not exist' unless File.exist?(path)
+
   SCHEMA = GraphQL::Client.load_schema(path)
   CLIENT = GraphQL::Client.new(schema: SCHEMA, execute: HTTP)
 
@@ -38,6 +36,17 @@ module Prj
           templates:issueTemplates {
             name
             body
+          }
+        }
+        repositories:repositoriesContributedTo(first: 20) {
+          edges {
+            node {
+              id
+              templates:issueTemplates {
+                name
+                body
+              }
+            }
           }
         }
       }

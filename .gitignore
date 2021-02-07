@@ -4,5 +4,6 @@
 .idea/
 
 # generated
+.rspec_status
 schema.json
 pkg/
