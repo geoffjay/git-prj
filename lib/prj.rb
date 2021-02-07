@@ -61,12 +61,25 @@ module Prj
       end
     end
 
+    option :template
+    option :title
     desc 'issue', 'create GitHub and GitLab issues'
     def issue
       result = Prj::CLIENT.query(Prj::REPO_QUERY, variables: { name: @repo }, context: { token: @token })
-      title = ask 'Issue title:'
+      repo_id = result.data.viewer.repository.id
+      if (title = options[:title]).nil?
+        title = ask 'Issue title:'
+      end
       filename = '/tmp/git-prj.scratch.md'
-      File.new(filename, 'w')
+      scratch = File.new(filename, 'w')
+      unless (template_name = options[:template]).nil?
+        result.data.viewer.repository.templates.each do |template|
+          if template.name.downcase == template_name.downcase
+            scratch.write(template.body)
+          end
+        end
+      end
+      scratch.close
       system("#{ENV['EDITOR']}", "#{filename}")
       file = File.open(filename)
       body = file.read
@@ -74,7 +87,7 @@ module Prj
       File.delete(filename)
       variables = {
         input: {
-          repositoryId: result.data.viewer.repository.id,
+          repositoryId: repo_id,
           title: title,
           body: body,
         }

@@ -35,6 +35,10 @@ module Prj
       viewer {
         repository(name: $name) {
           id
+          templates:issueTemplates {
+            name
+            body
+          }
         }
       }
     }
