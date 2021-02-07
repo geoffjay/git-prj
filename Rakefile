@@ -10,3 +10,14 @@ require 'rubocop/rake_task'
 RuboCop::RakeTask.new
 
 task default: %i[spec rubocop]
+
+require_relative 'lib/prj/graphql'
+
+namespace :schema do
+  # An offline copy of the schema allows queries to be typed checked statically
+  # before even sending a request.
+  desc 'Update GitHub GraphQL schema'
+  task :update do
+    GraphQL::Client.dump_schema(Prj::HTTP, 'schema.json')
+  end
+end
